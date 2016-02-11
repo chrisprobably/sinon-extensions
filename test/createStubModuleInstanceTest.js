@@ -3,7 +3,7 @@ var chai = require('chai');
 var assert = chai.assert;
 var sinonExtensions = require('../src/sinon-extensions');
 
-describe('sinon extensions', function () {
+describe('createStubModuleInstance', function () {
 	it('should stub a single function on a module', function () {
 		var myStub = sinon.createStubModuleInstance(function() { return {
 			foo: function() {}
