@@ -7,23 +7,41 @@ if (typeof exports === 'object') {
 
 	var originalCreateStubInstance = sinon.createStubInstance;
 
+	function isRestorable(object, objectFunction) {
+		return object[objectFunction] && object[objectFunction].isSinonProxy && typeof object[objectFunction].restore === 'function';
+	}
+
 	function restoreAllStubbedFunctions(stubbedObject) {
 		Object.keys(stubbedObject).forEach(function(ownProperty) {
-			if (stubbedObject[ownProperty].isSinonProxy && typeof stubbedObject[ownProperty].restore === 'function') {
+			if (isRestorable(stubbedObject, ownProperty)) {
 				stubbedObject[ownProperty].restore();
 			}
 		});
 	}
 
-	sinon.createStubModuleInstance = function(constructor) {
+	function restoreStubbedFunctions(stubbedObject, functionList) {
+		functionList.forEach(function(stubbedFunctionToIgnore) {
+			if (isRestorable(stubbedObject, stubbedFunctionToIgnore)) {
+				stubbedObject[stubbedFunctionToIgnore].restore();
+			}
+		});
+	}
+
+	sinon.createStubModuleInstance = function(constructor, shorthandOptions) {
 		var F = function() {};
 		F.prototype = new constructor;
-		return sinon.createStubInstance(F);
+		return sinon.createStubInstance(F, shorthandOptions);
 	};
 
-	sinon.createStubInstance = function(constructor) {
+	sinon.createStubInstance = function(constructor, shorthandOptions) {
 		var stubInstance = originalCreateStubInstance(constructor);
 		stubInstance.restore = restoreAllStubbedFunctions.bind(null, stubInstance);
+
+		if (shorthandOptions) {
+			if (shorthandOptions.ignore instanceof Array) {
+				restoreStubbedFunctions(stubInstance, shorthandOptions.ignore);
+			}
+		}
 		return stubInstance;
 	};
 
