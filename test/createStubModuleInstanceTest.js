@@ -31,5 +31,7 @@ describe('createStubModuleInstance', function () {
 		assert.isString(myStub.foo);
 		assert.equal('hey', myStub.foo);
 	});
+
+	
 });
 
